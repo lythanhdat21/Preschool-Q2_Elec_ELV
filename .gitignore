@@ -1,0 +1,4 @@
+*.jpg
+~$*
+Script/data.js.tmp
+__pycache__/

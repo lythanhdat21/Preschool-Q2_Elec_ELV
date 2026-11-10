@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theo dõi tồn kho</title>
+  <meta name="description" content="Theo dõi tồn kho và đơn giá vật tư theo thời gian.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237cf03d' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M21 8 12 3 3 8v8l9 5 9-5V8Z'/%3E%3Cpath d='m3 8 9 5 9-5M12 13v8'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <header class="site-header">
+    <a href="#ton" class="logo" title="Preschool Q2 · Elec/ELV">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg>
+      </span>
+      <span class="logo-text">Preschool Q2 · <em>Elec/ELV</em></span>
+    </a>
+    <button class="menu-icon" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav id="nav">
+      <span class="nav-ink" aria-hidden="true"></span>
+      <a href="#ton" data-tab="ton">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg>
+        Theo dõi tồn
+      </a>
+      <a href="#gia" data-tab="gia">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+        Theo dõi đơn giá
+      </a>
+      <a href="#do-thi" data-tab="do-thi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-5 4 3 5-7"/></svg>
+        Đồ thị
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <div id="state" class="state-message"><span class="spinner"></span>Đang tải dữ liệu…</div>
+    <div id="errorBox" class="error-box" hidden></div>
+
+    <!-- Hiện khi mở trực tiếp index.html (file:///) – trình duyệt không cho tự đọc file Excel -->
+    <section id="localBox" class="local-box" hidden>
+      <div class="local-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+      </div>
+      <h2>Chọn file “Tồn kho.xlsx” để xem</h2>
+      <p class="muted">Trang đang được mở trực tiếp từ ổ đĩa nên trình duyệt không cho tự đọc file Excel.<br>
+        Bấm nút bên dưới và chọn file <b>Tồn kho.xlsx</b>, hoặc mở website bằng <b>Xem trên máy.bat</b>.</p>
+      <div class="btn-row">
+        <button id="pickBtn" class="btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/></svg>
+          Chọn file Tồn kho.xlsx
+        </button>
+      </div>
+      <input id="fileInput" type="file" accept=".xlsx,.xlsm" hidden>
+    </section>
+
+    <!-- TAB 1: THEO DÕI TỒN -->
+    <section class="doc-tab" id="tab-ton" hidden>
+      <div class="doc-tab-header">
+        <div>
+          <h2>Theo dõi tồn</h2>
+        </div>
+        <div class="totals-box" id="totTon"></div>
+      </div>
+      <div class="toolbar">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" data-search="ton" placeholder="Tìm tên vật liệu…" aria-label="Tìm vật liệu">
+        </label>
+        <span class="hint">Bấm vào một dòng để xem đồ thị của vật liệu đó</span>
+      </div>
+      <div class="table-scroll"><table class="data-table" id="tblTon"></table></div>
+    </section>
+
+    <!-- TAB 2: THEO DÕI ĐƠN GIÁ -->
+    <section class="doc-tab" id="tab-gia" hidden>
+      <div class="doc-tab-header">
+        <div>
+          <h2>Theo dõi đơn giá</h2>
+          <p class="muted">Đơn giá (VNĐ) ghi nhận ở mỗi lần mua hàng<span class="project"></span></p>
+        </div>
+        <div class="totals-box" id="totGia"></div>
+      </div>
+      <div class="toolbar">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" data-search="gia" placeholder="Tìm tên vật liệu…" aria-label="Tìm vật liệu">
+        </label>
+        <span class="hint">Ô “–” là ngày không mua hàng</span>
+      </div>
+      <div class="table-scroll"><table class="data-table" id="tblGia"></table></div>
+    </section>
+
+    <!-- TAB 3: ĐỒ THỊ -->
+    <section class="doc-tab" id="tab-do-thi" hidden>
+      <div class="doc-tab-header">
+        <div>
+          <h2>Đồ thị</h2>
+          <p class="muted">Tồn kho và đơn giá theo thời gian<span class="project"></span></p>
+        </div>
+        <div class="totals-box" id="totChart"></div>
+      </div>
+      <div class="picker">
+        <button id="prevBtn" class="round-btn" type="button" aria-label="Vật liệu trước">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <label class="select-wrap">
+          <span class="select-label">Chọn vật liệu</span>
+          <select id="itemSelect" aria-label="Chọn vật liệu"></select>
+        </label>
+        <button id="nextBtn" class="round-btn" type="button" aria-label="Vật liệu sau">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="charts">
+        <figure class="chart-card">
+          <figcaption><span class="dot dot-qty"></span>Tồn kho theo thời gian</figcaption>
+          <div class="chart-area">
+            <canvas id="qtyChart" role="img" aria-label="Đồ thị tồn kho theo thời gian"></canvas>
+            <p class="chart-empty" hidden>Chưa có dữ liệu</p>
+          </div>
+        </figure>
+        <figure class="chart-card">
+          <figcaption><span class="dot dot-price"></span>Đơn giá theo thời gian (VNĐ)</figcaption>
+          <div class="chart-area">
+            <canvas id="priceChart" role="img" aria-label="Đồ thị đơn giá theo thời gian"></canvas>
+            <p class="chart-empty" hidden>Chưa có dữ liệu</p>
+          </div>
+        </figure>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Dữ liệu đọc trực tiếp từ <b>Tồn kho.xlsx</b> · <span id="updated">–</span>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js?v=3"></script>
+</body>
+</html>
